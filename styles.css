@@ -1,0 +1,14 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: whitesmoke;
+    font-family: 'Times New Roman';
+    background-color: #050505;
+}
+
+canvas {
+    border: 1px solid whitesmoke;
+    background-image: url("./flappy_bg.jpg");
+}
