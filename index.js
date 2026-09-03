@@ -5,16 +5,15 @@ const HORZ_VEL = 2;
 const GRAVITY = 225;
 const BIRD_VERT_VEL = 450;
 const BIRD_ROTATION = (30 * Math.PI) / 180;
+const GAP = 150;
+const PIPE_WIDTH = 100;
+const TOTAL_PIPE_HEIGHT = GAME_HEIGHT - GAP;
 
 //GAME OBJECTS
 let Game = {
   isRunning: false,
   score: 0,
   mainStopId: null,
-
-  update() {
-    this.score++;
-  },
 };
 
 let Bird = {
@@ -49,11 +48,44 @@ let Bird = {
 //GLOBAL VARS
 let ctx;
 let bg_img;
+let pipeTopImg;
+let pipeBottomImg;
 let isSpacePressed = 0;
 let deltaTimeAcc = 0;
 let prevResTime = 0;
+let pipesArray = [];
 
 //FUNCTIONS
+function Pipe(y, height, isTop) {
+  return {
+    x: GAME_WIDTH,
+    y: y,
+    passed: false,
+    width: PIPE_WIDTH,
+    height: height,
+    isTop: isTop,
+  };
+}
+function updatePipes(timeDelta) {
+  for (let pipe of pipesArray) {
+    if (Bird.x > pipe.x + pipe.width) {
+      pipe.passed = true;
+      Game.score += 0.5;
+      continue;
+    }
+    pipe.x -= 300 * (timeDelta / 1000);
+  }
+  pipesArray = pipesArray.filter((pipe) => !pipe.passed);
+}
+function generatePipePairs() {
+  let pipeTopH = Math.max(
+    TOTAL_PIPE_HEIGHT * 0.25,
+    Math.floor(Math.random() * TOTAL_PIPE_HEIGHT * 0.6),
+  );
+  pipesArray.push(new Pipe(0, pipeTopH, true));
+  let pipBotH = TOTAL_PIPE_HEIGHT - pipeTopH;
+  pipesArray.push(new Pipe(pipeTopH + GAP, pipBotH, false));
+}
 
 window.onload = function () {
   const canvas = document.querySelector("canvas");
@@ -77,6 +109,12 @@ window.onload = function () {
     ctx.fillStyle = "black";
   };
 
+  pipeTopImg = new Image();
+  pipeTopImg.src = "./assets/toppipe.png";
+
+  pipeBottomImg = new Image();
+  pipeBottomImg.src = "./assets/bottompipe.png";
+
   let bird_img;
   for (let i = 0; i < 4; i++) {
     bird_img = new Image();
@@ -84,6 +122,7 @@ window.onload = function () {
     bird_img.onload = function () {};
     Bird.images[i] = bird_img;
   }
+  setInterval(generatePipePairs, 1500);
 };
 function render() {
   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -104,12 +143,20 @@ function render() {
   );
   ctx.restore();
   ctx.strokeRect(Bird.x, Bird.y, Bird.width, Bird.height);
+
+  for (let pipe of pipesArray) {
+    if (pipe.isTop) {
+      ctx.drawImage(pipeTopImg, pipe.x, pipe.y, pipe.width, pipe.height);
+    } else {
+      ctx.drawImage(pipeBottomImg, pipe.x, pipe.y, pipe.width, pipe.height);
+    }
+  }
 }
 function reset() {
   Bird.x = 50;
   Bird.y = Math.floor(GAME_HEIGHT / 2);
   Bird.imgIdx = 0;
-  console.log(deltaTimeAcc / (Bird.frameCount - 1));
+  console.log(deltaTimeAcc / 1000);
   Bird.frameCount = 0;
   deltaTimeAcc = 0;
   ctx.fillStyle = "red";
@@ -145,7 +192,7 @@ window.main = function (resTime) {
     return;
   } else {
     Bird.update(deltaTime);
-    Game.update();
+    updatePipes(deltaTime);
   }
 
   //render
