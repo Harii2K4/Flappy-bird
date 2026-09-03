@@ -1,12 +1,19 @@
+//CONSTANTS
 const GAME_WIDTH = 1534;
 const GAME_HEIGHT = 830;
 const HORZ_VEL = 2;
 
+//GAME OBJECTS
 let Game = {
   isRunning: false,
   score: 0,
   mainStopId: null,
+
+  update() {
+    this.score++;
+  },
 };
+
 let Bird = {
   height: 50,
   width: 50,
@@ -28,8 +35,12 @@ let Bird = {
     return this.images[this.imgIdx];
   },
 };
+
+//GLOBAL VARS
 let ctx;
 let bg_img;
+
+//FUNCTIONS
 
 window.onload = function () {
   const canvas = document.querySelector("canvas");
@@ -39,9 +50,20 @@ window.onload = function () {
 
   bg_img = new Image();
   bg_img.src = "flappy_bg.jpg";
+
   bg_img.onload = function () {
     ctx.drawImage(bg_img, 0, 0, GAME_WIDTH, GAME_HEIGHT);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "red";
+    ctx.font = "50px Arial";
+    ctx.fillText(
+      "Press Space To Start The Game",
+      Math.floor(GAME_WIDTH / 2),
+      Math.floor(GAME_HEIGHT / 2),
+    );
+    ctx.fillStyle = "black";
   };
+
   let bird_img;
   for (let i = 0; i < 4; i++) {
     bird_img = new Image();
@@ -53,6 +75,12 @@ window.onload = function () {
 function render() {
   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
   ctx.drawImage(bg_img, 0, 0, GAME_WIDTH, GAME_HEIGHT);
+  ctx.save();
+  ctx.fillStyle = "whitesmoke";
+  ctx.font = "30px Arial";
+  ctx.textAlign = "start";
+  ctx.fillText(`Score : ${Game.score}`, 30, 30);
+  ctx.restore();
   ctx.fillRect(Bird.x, Bird.y, Bird.width, Bird.height);
   ctx.drawImage(Bird.getImg(), Bird.x, Bird.y, Bird.width, Bird.height);
 }
@@ -60,6 +88,13 @@ function reset() {
   Bird.x = 50;
   Bird.y = Math.floor(GAME_HEIGHT / 2);
   Bird.imgIdx = 0;
+  ctx.fillStyle = "red";
+  ctx.fillText(
+    `Press Space To Reset The Game\n Score:${Game.score}`,
+    Math.floor(GAME_WIDTH / 2),
+    Math.floor(GAME_HEIGHT / 2),
+  );
+  ctx.fillStyle = "black";
 }
 window.main = function () {
   Game.mainStopId = window.requestAnimationFrame(main);
@@ -72,6 +107,7 @@ window.main = function () {
     return;
   } else {
     Bird.update();
+    Game.update();
   }
 
   //render
