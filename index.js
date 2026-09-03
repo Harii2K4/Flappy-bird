@@ -2,6 +2,8 @@
 const GAME_WIDTH = 1534;
 const GAME_HEIGHT = 830;
 const HORZ_VEL = 2;
+const GRAVITY = 195;
+const BIRD_VERT_VEL = 450;
 
 //GAME OBJECTS
 let Game = {
@@ -23,12 +25,13 @@ let Bird = {
   x: 50,
   y: Math.floor(GAME_HEIGHT / 2),
 
-  update() {
+  update(timeDelta) {
     this.frameCount++;
     if (this.frameCount % 8 === 0) {
       this.imgIdx = (this.imgIdx + 1) % 4;
     }
-    this.x += HORZ_VEL;
+    this.y += (GRAVITY - isSpacePressed * BIRD_VERT_VEL) * (timeDelta / 1000);
+    this.y = Math.max(0, this.y);
   },
 
   getImg() {
@@ -39,6 +42,9 @@ let Bird = {
 //GLOBAL VARS
 let ctx;
 let bg_img;
+let isSpacePressed = 0;
+let deltaTimeAcc = 0;
+let prevResTime = 0;
 
 //FUNCTIONS
 
@@ -49,7 +55,7 @@ window.onload = function () {
   ctx = canvas.getContext("2d");
 
   bg_img = new Image();
-  bg_img.src = "flappy_bg.jpg";
+  bg_img.src = "./assets/flappy_bg.jpg";
 
   bg_img.onload = function () {
     ctx.drawImage(bg_img, 0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -67,7 +73,7 @@ window.onload = function () {
   let bird_img;
   for (let i = 0; i < 4; i++) {
     bird_img = new Image();
-    bird_img.src = `flappybird${i}.png`;
+    bird_img.src = `./assets/flappybird${i}.png`;
     bird_img.onload = function () {};
     Bird.images[i] = bird_img;
   }
@@ -88,25 +94,42 @@ function reset() {
   Bird.x = 50;
   Bird.y = Math.floor(GAME_HEIGHT / 2);
   Bird.imgIdx = 0;
+  console.log(deltaTimeAcc / (Bird.frameCount - 1));
+  Bird.frameCount = 0;
+  deltaTimeAcc = 0;
   ctx.fillStyle = "red";
   ctx.fillText(
     `Press Space To Reset The Game\n Score:${Game.score}`,
     Math.floor(GAME_WIDTH / 2),
     Math.floor(GAME_HEIGHT / 2),
   );
+  Game.score = 0;
   ctx.fillStyle = "black";
 }
-window.main = function () {
+window.main = function (resTime) {
   Game.mainStopId = window.requestAnimationFrame(main);
+  //First call from the first space to start game
+  if (resTime === undefined) {
+    return;
+  }
+  if (Bird.frameCount === 0) {
+    Bird.frameCount++;
+    prevResTime = resTime;
+    return;
+  }
+  let deltaTime = resTime - prevResTime;
+  prevResTime = resTime;
+  deltaTimeAcc += deltaTime;
 
   //update
-  if (Bird.x + Bird.width >= GAME_WIDTH) {
+  if (Bird.y + Bird.height >= GAME_HEIGHT) {
     Game.isRunning = false;
+    Bird.frameCount++;
     reset();
     window.cancelAnimationFrame(Game.mainStopId);
     return;
   } else {
-    Bird.update();
+    Bird.update(deltaTime);
     Game.update();
   }
 
@@ -114,9 +137,16 @@ window.main = function () {
   render();
 };
 
-document.body.addEventListener("keypress", (e) => {
-  if (e.key === " " && !Game.isRunning) {
-    Game.isRunning = true;
-    main();
-  }
+document.body.addEventListener("keydown", (e) => {
+  if (e.key === " ")
+    if (!Game.isRunning) {
+      Game.isRunning = true;
+      main();
+    } else {
+      isSpacePressed = 1;
+    }
+});
+
+document.body.addEventListener("keyup", (e) => {
+  if (e.key === " ") isSpacePressed = 0;
 });
