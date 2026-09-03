@@ -2,8 +2,9 @@
 const GAME_WIDTH = 1534;
 const GAME_HEIGHT = 830;
 const HORZ_VEL = 2;
-const GRAVITY = 195;
+const GRAVITY = 225;
 const BIRD_VERT_VEL = 450;
+const BIRD_ROTATION = (30 * Math.PI) / 180;
 
 //GAME OBJECTS
 let Game = {
@@ -24,6 +25,7 @@ let Bird = {
   images: [],
   x: 50,
   y: Math.floor(GAME_HEIGHT / 2),
+  angle: 0,
 
   update(timeDelta) {
     this.frameCount++;
@@ -32,6 +34,11 @@ let Bird = {
     }
     this.y += (GRAVITY - isSpacePressed * BIRD_VERT_VEL) * (timeDelta / 1000);
     this.y = Math.max(0, this.y);
+
+    this.angle +=
+      -isSpacePressed * BIRD_ROTATION * 0.25 +
+      (1 - isSpacePressed) * BIRD_ROTATION * 0.25;
+    this.angle = Math.max(-BIRD_ROTATION, Math.min(BIRD_ROTATION, this.angle));
   },
 
   getImg() {
@@ -86,9 +93,17 @@ function render() {
   ctx.font = "30px Arial";
   ctx.textAlign = "start";
   ctx.fillText(`Score : ${Game.score}`, 30, 30);
+  ctx.translate(Bird.x + Bird.width / 2, Bird.y + Bird.height / 2);
+  ctx.rotate(Bird.angle);
+  ctx.drawImage(
+    Bird.getImg(),
+    -Bird.width / 2,
+    -Bird.height / 2,
+    Bird.width,
+    Bird.height,
+  );
   ctx.restore();
-  ctx.fillRect(Bird.x, Bird.y, Bird.width, Bird.height);
-  ctx.drawImage(Bird.getImg(), Bird.x, Bird.y, Bird.width, Bird.height);
+  ctx.strokeRect(Bird.x, Bird.y, Bird.width, Bird.height);
 }
 function reset() {
   Bird.x = 50;
