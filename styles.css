@@ -3,9 +3,14 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    color: whitesmoke;
     font-family: 'Times New Roman';
     background-color: #050505;
+}
+
+h1 {
+    background: linear-gradient(to right, #ff007b, #7300ff);
+    background-clip: text;
+    color: transparent;
 }
 
 canvas {
