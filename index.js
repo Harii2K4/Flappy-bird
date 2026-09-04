@@ -3,10 +3,12 @@ const GAME_WIDTH = 1534;
 const GAME_HEIGHT = 830;
 const GRAVITY = 1000;
 const BIRD_VERT_VEL = 450;
-const BIRD_ROTATION = (30 * Math.PI) / 180;
 const GAP = 150;
 const PIPE_WIDTH = 100;
 const TOTAL_PIPE_HEIGHT = GAME_HEIGHT - GAP;
+
+const MAX_ANGLE_UP = -(30 * Math.PI) / 180;
+const MAX_ANGLE_DOWN = (90 * Math.PI) / 180;
 
 const HORZ_VEL = 300;
 const FLAP_VEL = 375;
@@ -49,10 +51,10 @@ let Bird = {
     this.y += this.velX * timeDeltaMs;
     this.y = Math.max(0, this.y);
 
-    this.angle +=
-      -isSpacePressed * BIRD_ROTATION * 0.25 +
-      (1 - isSpacePressed) * BIRD_ROTATION * 0.25;
-    this.angle = Math.max(-BIRD_ROTATION, Math.min(BIRD_ROTATION, this.angle));
+    //1000 is MAGIC NUMBER idk what to call it
+    this.angle =
+      this.velX < 0 ? MAX_ANGLE_UP : (MAX_ANGLE_DOWN * this.velX) / 1000;
+    this.angle = Math.min(MAX_ANGLE_DOWN, this.angle);
   },
   reset() {
     this.x = 50;
@@ -72,7 +74,6 @@ let ctx;
 let bg_img;
 let pipeTopImg;
 let pipeBottomImg;
-let isSpacePressed = 0;
 let deltaTimeAcc = 0;
 let prevResTime = 0;
 let intervalId;
@@ -245,8 +246,4 @@ document.body.addEventListener("keydown", (e) => {
       main();
     }
   }
-});
-
-document.body.addEventListener("keyup", (e) => {
-  if (e.key === " ") isSpacePressed = 0;
 });
