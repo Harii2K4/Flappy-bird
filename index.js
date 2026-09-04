@@ -177,11 +177,11 @@ function render() {
   ctx.strokeRect(Bird.x, Bird.y, Bird.width, Bird.height);
 }
 function checkCollision(pipe) {
-  //COLLISION_OFFSET shrinks the pipes and makes the collision more fair
-  const leftEdge = Bird.x < pipe.x + COLLISION_OFFSET + pipe.width;
-  const rightEdge = Bird.x + Bird.width > pipe.x + COLLISION_OFFSET;
-  const topEdge = Bird.y < pipe.y - COLLISION_OFFSET + pipe.height;
-  const bottomEdge = Bird.y + Bird.height > pipe.y - COLLISION_OFFSET;
+  //COLLISION_OFFSET shrinks the bird and makes the collision more fair
+  const leftEdge = Bird.x + COLLISION_OFFSET < pipe.x + pipe.width;
+  const rightEdge = Bird.x + Bird.width - COLLISION_OFFSET > pipe.x;
+  const topEdge = Bird.y + COLLISION_OFFSET < pipe.y + pipe.height;
+  const bottomEdge = Bird.y + Bird.height - COLLISION_OFFSET > pipe.y;
 
   return leftEdge && rightEdge && topEdge && bottomEdge;
 }
