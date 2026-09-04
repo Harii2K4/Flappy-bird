@@ -14,6 +14,12 @@ let Game = {
   isRunning: false,
   score: 0,
   mainStopId: null,
+
+  reset() {
+    this.isRunning = false;
+    this.score = 0;
+    this.mainStopId = null;
+  },
 };
 
 let Bird = {
@@ -39,6 +45,12 @@ let Bird = {
       (1 - isSpacePressed) * BIRD_ROTATION * 0.25;
     this.angle = Math.max(-BIRD_ROTATION, Math.min(BIRD_ROTATION, this.angle));
   },
+  reset() {
+    this.x = 50;
+    this.y = Math.floor(GAME_HEIGHT / 2);
+    this.imgIdx = 0;
+    this.frameCount = 0;
+  },
 
   getImg() {
     return this.images[this.imgIdx];
@@ -53,6 +65,7 @@ let pipeBottomImg;
 let isSpacePressed = 0;
 let deltaTimeAcc = 0;
 let prevResTime = 0;
+let intervalId;
 let pipesArray = [];
 
 //FUNCTIONS
@@ -102,7 +115,7 @@ window.onload = function () {
     ctx.fillStyle = "red";
     ctx.font = "50px Arial";
     ctx.fillText(
-      "Press Space To Start The Game",
+      "Press Enter To Start The Game",
       Math.floor(GAME_WIDTH / 2),
       Math.floor(GAME_HEIGHT / 2),
     );
@@ -122,11 +135,17 @@ window.onload = function () {
     bird_img.onload = function () {};
     Bird.images[i] = bird_img;
   }
-  setInterval(generatePipePairs, 1500);
 };
 function render() {
   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
   ctx.drawImage(bg_img, 0, 0, GAME_WIDTH, GAME_HEIGHT);
+  for (let pipe of pipesArray) {
+    if (pipe.isTop) {
+      ctx.drawImage(pipeTopImg, pipe.x, pipe.y, pipe.width, pipe.height);
+    } else {
+      ctx.drawImage(pipeBottomImg, pipe.x, pipe.y, pipe.width, pipe.height);
+    }
+  }
   ctx.save();
   ctx.fillStyle = "whitesmoke";
   ctx.font = "30px Arial";
@@ -143,30 +162,32 @@ function render() {
   );
   ctx.restore();
   ctx.strokeRect(Bird.x, Bird.y, Bird.width, Bird.height);
+}
+function checkCollision(pipe) {
+  const leftEdge = Bird.x <= pipe.x + pipe.width;
+  const rightEdge = Bird.x + Bird.width >= pipe.x;
+  const topEdge = Bird.y <= pipe.y + pipe.height;
+  const bottomEdge = Bird.y + Bird.height >= pipe.y;
 
-  for (let pipe of pipesArray) {
-    if (pipe.isTop) {
-      ctx.drawImage(pipeTopImg, pipe.x, pipe.y, pipe.width, pipe.height);
-    } else {
-      ctx.drawImage(pipeBottomImg, pipe.x, pipe.y, pipe.width, pipe.height);
-    }
-  }
+  return leftEdge && rightEdge && topEdge && bottomEdge;
 }
 function reset() {
-  Bird.x = 50;
-  Bird.y = Math.floor(GAME_HEIGHT / 2);
-  Bird.imgIdx = 0;
-  console.log(deltaTimeAcc / 1000);
-  Bird.frameCount = 0;
   deltaTimeAcc = 0;
+  prevResTime = 0;
+  pipesArray = [];
+
   ctx.fillStyle = "red";
   ctx.fillText(
-    `Press Space To Reset The Game\n Score:${Game.score}`,
+    `Press Enter To Reset The Game\n Score:${Game.score}`,
     Math.floor(GAME_WIDTH / 2),
     Math.floor(GAME_HEIGHT / 2),
   );
-  Game.score = 0;
   ctx.fillStyle = "black";
+
+  Bird.reset();
+  Game.reset();
+  clearInterval(intervalId);
+  intervalId = undefined;
 }
 window.main = function (resTime) {
   Game.mainStopId = window.requestAnimationFrame(main);
@@ -184,15 +205,18 @@ window.main = function (resTime) {
   deltaTimeAcc += deltaTime;
 
   //update
+  Bird.update(deltaTime);
+  updatePipes(deltaTime);
   if (Bird.y + Bird.height >= GAME_HEIGHT) {
-    Game.isRunning = false;
-    Bird.frameCount++;
-    reset();
     window.cancelAnimationFrame(Game.mainStopId);
+    reset();
     return;
-  } else {
-    Bird.update(deltaTime);
-    updatePipes(deltaTime);
+  }
+  for (let pipe of pipesArray) {
+    if (checkCollision(pipe)) {
+      Game.isRunning = False;
+      return;
+    }
   }
 
   //render
@@ -200,13 +224,15 @@ window.main = function (resTime) {
 };
 
 document.body.addEventListener("keydown", (e) => {
-  if (e.key === " ")
+  if (e.key === " ") {
+    isSpacePressed = Game.isRunning ? 1 : isSpacePressed;
+  } else if (e.key === "Enter") {
     if (!Game.isRunning) {
+      intervalId = setInterval(generatePipePairs, 1500);
       Game.isRunning = true;
       main();
-    } else {
-      isSpacePressed = 1;
     }
+  }
 });
 
 document.body.addEventListener("keyup", (e) => {
