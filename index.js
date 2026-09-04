@@ -1,13 +1,15 @@
 //CONSTANTS
 const GAME_WIDTH = 1534;
 const GAME_HEIGHT = 830;
-const HORZ_VEL = 2;
-const GRAVITY = 225;
+const GRAVITY = 1000;
 const BIRD_VERT_VEL = 450;
 const BIRD_ROTATION = (30 * Math.PI) / 180;
 const GAP = 150;
 const PIPE_WIDTH = 100;
 const TOTAL_PIPE_HEIGHT = GAME_HEIGHT - GAP;
+
+const HORZ_VEL = 300;
+const FLAP_VEL = 375;
 
 //GAME OBJECTS
 let Game = {
@@ -23,21 +25,28 @@ let Game = {
 };
 
 let Bird = {
-  height: 50,
-  width: 50,
+  height: 45,
+  width: 70,
   frameCount: 0,
   imgIdx: 0,
   images: [],
   x: 50,
   y: Math.floor(GAME_HEIGHT / 2),
   angle: 0,
+  velX: 0,
+
+  flap() {
+    this.velX = -FLAP_VEL;
+  },
 
   update(timeDelta) {
     this.frameCount++;
     if (this.frameCount % 8 === 0) {
       this.imgIdx = (this.imgIdx + 1) % 4;
     }
-    this.y += (GRAVITY - isSpacePressed * BIRD_VERT_VEL) * (timeDelta / 1000);
+    let timeDeltaMs = timeDelta / 1000;
+    this.velX += GRAVITY * timeDeltaMs;
+    this.y += this.velX * timeDeltaMs;
     this.y = Math.max(0, this.y);
 
     this.angle +=
@@ -50,6 +59,7 @@ let Bird = {
     this.y = Math.floor(GAME_HEIGHT / 2);
     this.imgIdx = 0;
     this.frameCount = 0;
+    this.velX = 0;
   },
 
   getImg() {
@@ -86,7 +96,7 @@ function updatePipes(timeDelta) {
       Game.score += 0.5;
       continue;
     }
-    pipe.x -= 300 * (timeDelta / 1000);
+    pipe.x -= HORZ_VEL * (timeDelta / 1000);
   }
   pipesArray = pipesArray.filter((pipe) => !pipe.passed);
 }
@@ -226,8 +236,8 @@ window.main = function (resTime) {
 };
 
 document.body.addEventListener("keydown", (e) => {
-  if (e.key === " ") {
-    isSpacePressed = Game.isRunning ? 1 : isSpacePressed;
+  if (e.key === " " && !e.repeat) {
+    Bird.flap();
   } else if (e.key === "Enter") {
     if (!Game.isRunning) {
       intervalId = setInterval(generatePipePairs, 1500);
