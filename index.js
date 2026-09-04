@@ -1,15 +1,17 @@
 //CONSTANTS
 const GAME_WIDTH = 1534;
 const GAME_HEIGHT = 830;
-const GRAVITY = 1000;
-const BIRD_VERT_VEL = 450;
+
 const GAP = 150;
 const PIPE_WIDTH = 100;
 const TOTAL_PIPE_HEIGHT = GAME_HEIGHT - GAP;
+const COLLISION_OFFSET = 7;
 
 const MAX_ANGLE_UP = -(30 * Math.PI) / 180;
 const MAX_ANGLE_DOWN = (90 * Math.PI) / 180;
 
+const GRAVITY = 1000;
+const BIRD_VERT_VEL = 450;
 const HORZ_VEL = 300;
 const FLAP_VEL = 375;
 
@@ -175,10 +177,11 @@ function render() {
   ctx.strokeRect(Bird.x, Bird.y, Bird.width, Bird.height);
 }
 function checkCollision(pipe) {
-  const leftEdge = Bird.x <= pipe.x + pipe.width;
-  const rightEdge = Bird.x + Bird.width >= pipe.x;
-  const topEdge = Bird.y <= pipe.y + pipe.height;
-  const bottomEdge = Bird.y + Bird.height >= pipe.y;
+  //COLLISION_OFFSET shrinks the pipes and makes the collision more fair
+  const leftEdge = Bird.x < pipe.x + COLLISION_OFFSET + pipe.width;
+  const rightEdge = Bird.x + Bird.width > pipe.x + COLLISION_OFFSET;
+  const topEdge = Bird.y < pipe.y - COLLISION_OFFSET + pipe.height;
+  const bottomEdge = Bird.y + Bird.height > pipe.y - COLLISION_OFFSET;
 
   return leftEdge && rightEdge && topEdge && bottomEdge;
 }
