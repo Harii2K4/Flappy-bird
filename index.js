@@ -103,8 +103,8 @@ function updatePipes(timeDelta) {
 }
 function generatePipePairs() {
   let pipeTopH = Math.max(
-    TOTAL_PIPE_HEIGHT * 0.25,
-    Math.floor(Math.random() * TOTAL_PIPE_HEIGHT * 0.6),
+    TOTAL_PIPE_HEIGHT * 0.2,
+    Math.floor(Math.random() * TOTAL_PIPE_HEIGHT * 0.75),
   );
   pipesArray.push(new Pipe(0, pipeTopH, true));
   let pipBotH = TOTAL_PIPE_HEIGHT - pipeTopH;
