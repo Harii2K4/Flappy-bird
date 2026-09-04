@@ -1,6 +1,6 @@
 ## Build An Flappy Bird Game in Vanila Js
 
-The most simple implementation of Flappy Bird using Vanilla Js it isnt all that simple
+The most simple implementation of Flappy Bird using Vanilla Js .It aint all that ,just simple
 rectangle collison and physics.
 
 #### Future TODO:
