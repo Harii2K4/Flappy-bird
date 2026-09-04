@@ -214,7 +214,9 @@ window.main = function (resTime) {
   }
   for (let pipe of pipesArray) {
     if (checkCollision(pipe)) {
-      Game.isRunning = False;
+      window.cancelAnimationFrame(Game.mainStopId);
+      Game.isRunning = false;
+      reset();
       return;
     }
   }
