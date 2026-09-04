@@ -14,6 +14,7 @@ const GRAVITY = 1000;
 const BIRD_VERT_VEL = 450;
 const HORZ_VEL = 300;
 const FLAP_VEL = 375;
+const FLAP_TIME = 400;
 
 //GAME OBJECTS
 let Game = {
@@ -31,7 +32,7 @@ let Game = {
 let Bird = {
   height: 45,
   width: 70,
-  frameCount: 0,
+  timeAcc: 0,
   imgIdx: 0,
   images: [],
   x: 50,
@@ -44,8 +45,9 @@ let Bird = {
   },
 
   update(timeDelta) {
-    this.frameCount++;
-    if (this.frameCount % 8 === 0) {
+    this.timeAcc += timeDelta;
+    if (this.timeAcc >= FLAP_TIME) {
+      this.timeAcc = 0;
       this.imgIdx = (this.imgIdx + 1) % 4;
     }
     let timeDeltaMs = timeDelta / 1000;
