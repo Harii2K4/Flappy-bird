@@ -39,12 +39,14 @@ let Bird = {
   y: Math.floor(GAME_HEIGHT / 2),
   angle: 0,
   velX: 0,
+  frameCount: 0,
 
   flap() {
     this.velX = -FLAP_VEL;
   },
 
   update(timeDelta) {
+    this.frameCount++;
     this.timeAcc += timeDelta;
     if (this.timeAcc >= FLAP_TIME) {
       this.timeAcc = 0;
@@ -61,6 +63,7 @@ let Bird = {
     this.angle = Math.min(MAX_ANGLE_DOWN, this.angle);
   },
   reset() {
+    this.angle = 0;
     this.x = 50;
     this.y = Math.floor(GAME_HEIGHT / 2);
     this.imgIdx = 0;
@@ -223,6 +226,7 @@ window.main = function (resTime) {
   //update
   Bird.update(deltaTime);
   updatePipes(deltaTime);
+
   if (Bird.y + Bird.height >= GAME_HEIGHT) {
     window.cancelAnimationFrame(Game.mainStopId);
     reset();
