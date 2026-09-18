@@ -7,8 +7,8 @@ const PIPE_WIDTH = 100;
 const TOTAL_PIPE_HEIGHT = GAME_HEIGHT - GAP;
 const COLLISION_OFFSET = 7;
 
-const MAX_ANGLE_UP = -(30 * Math.PI) / 180;
 const MAX_ANGLE_DOWN = (90 * Math.PI) / 180;
+const MAX_ANGLE_UP = -(30 * Math.PI) / 180;
 
 const GRAVITY = 1000;
 const BIRD_VERT_VEL = 450;
@@ -43,6 +43,7 @@ let Bird = {
 
   flap() {
     this.velX = -FLAP_VEL;
+    Sound.play("flap");
   },
 
   update(timeDelta) {
@@ -73,6 +74,26 @@ let Bird = {
 
   getImg() {
     return this.images[this.imgIdx];
+  },
+};
+let Sound = {
+  init() {
+    this.dieAudio = new Audio("assets/sfx_die.wav");
+    this.flapAudio = new Audio("assets/sfx_wing.wav");
+    this.hitAudio = new Audio("assets/sfx_hit.wav");
+  },
+  play(type) {
+    switch (type) {
+      case "die":
+        this.dieAudio.play();
+        break;
+      case "flap":
+        this.flapAudio.play();
+        break;
+      case "hit":
+        this.hitAudio.play();
+        break;
+    }
   },
 };
 
@@ -153,6 +174,8 @@ window.onload = function () {
     bird_img.onload = function () {};
     Bird.images[i] = bird_img;
   }
+
+  Sound.init();
 };
 function render() {
   ctx.clearRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
@@ -228,12 +251,14 @@ window.main = function (resTime) {
   updatePipes(deltaTime);
 
   if (Bird.y + Bird.height >= GAME_HEIGHT) {
+    Sound.play("die");
     window.cancelAnimationFrame(Game.mainStopId);
     reset();
     return;
   }
   for (let pipe of pipesArray) {
     if (checkCollision(pipe)) {
+      Sound.play("hit");
       window.cancelAnimationFrame(Game.mainStopId);
       Game.isRunning = false;
       reset();
